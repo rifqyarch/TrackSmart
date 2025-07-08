@@ -8,7 +8,7 @@ Aplikasi web sederhana untuk mencari rute pengiriman terbaik antarkota di Indone
 - Simulasi rute dan marker otomatis
 
 ## Preview
-![Preview](44.png)
+![Preview](logooptimasirute.png)
 
 ## Teknologi
 - HTML, CSS, JavaScript
