@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>Optimasi Rute Terbaik</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+</head>
+<body>
+  <h1>Optimasi Rute Terbaik</h1>
+
+  <input type="text" id="start" placeholder="Lokasi Awal (misal: Jakarta)">
+  <input type="text" id="end" placeholder="Lokasi Tujuan (misal: Surabaya)">
+  <input type="number" id="berat" placeholder="Berat Barang (kg)">
+  <input type="number" id="biaya" placeholder="Biaya per kg (misal: 2000)">
+  <button onclick="cariRute()">Cari Rute Terbaik</button>
+
+  <div id="info"></div>
+  <div id="map"></div>
+
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
