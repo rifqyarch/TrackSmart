@@ -1,13 +1,16 @@
 let map = L.map('map').setView([-2.5, 117], 5); // posisi awal Indonesia
+
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
   attribution: '© OpenStreetMap contributors'
 }).addTo(map);
 
 let routeLayer = null;
+let startMarker = null;
+let endMarker = null;
 
 async function cariRute() {
-  const start = document.getElementById('start').value;
-  const end = document.getElementById('end').value;
+  const start = document.getElementById('start').value.trim();
+  const end = document.getElementById('end').value.trim();
   const beratBarang = parseFloat(document.getElementById('berat').value);
   const biayaPerKg = parseFloat(document.getElementById('biaya').value);
 
@@ -23,7 +26,7 @@ async function cariRute() {
     ]);
 
     if (!startLoc.length || !endLoc.length) {
-      alert('Gagal menemukan lokasi. Coba cek ejaan kota.');
+      alert('Gagal menemukan lokasi. Periksa kembali nama kota atau lokasi.');
       return;
     }
 
@@ -34,33 +37,38 @@ async function cariRute() {
     const routeData = await routeRes.json();
 
     if (!routeData.routes.length) {
-      alert('Rute tidak ditemukan.');
+      alert('Rute tidak ditemukan. Silakan coba lokasi lain.');
       return;
     }
 
     const route = routeData.routes[0];
     const distanceKm = (route.distance / 1000).toFixed(2);
     const durationJam = (route.duration / 3600).toFixed(2);
-    const biayaTotal = (beratBarang * biayaPerKg).toLocaleString();
+    const biayaTotal = (beratBarang * biayaPerKg).toLocaleString('id-ID');
 
     // Tampilkan info
-    document.getElementById('info').innerHTML =
-      `Jarak: ${distanceKm} km<br>` +
-      `Durasi: ${durationJam} jam<br>` +
-      `Berat Barang: ${beratBarang} kg<br>` +
-      `Biaya Pengiriman: Rp ${biayaTotal}`;
+    document.getElementById('info').innerHTML = `
+      <p>🧭 <strong>Jarak:</strong> ${distanceKm} km</p>
+      <p>⏱️ <strong>Durasi:</strong> ${durationJam} jam</p>
+      <p>📦 <strong>Berat Barang:</strong> ${beratBarang} kg</p>
+      <p>💸 <strong>Biaya Pengiriman:</strong> Rp ${biayaTotal}</p>
+    `;
 
-    // Gambar rute
+    // Hapus rute dan marker sebelumnya
     if (routeLayer) map.removeLayer(routeLayer);
+    if (startMarker) map.removeLayer(startMarker);
+    if (endMarker) map.removeLayer(endMarker);
+
+    // Tambahkan rute baru
     routeLayer = L.geoJSON(route.geometry).addTo(map);
     map.fitBounds(routeLayer.getBounds());
 
-    // Tambahkan penanda
-    L.marker(startCoord).addTo(map).bindPopup("Awal").openPopup();
-    L.marker(endCoord).addTo(map).bindPopup("Tujuan");
+    // Tambahkan marker baru
+    startMarker = L.marker(startCoord).addTo(map).bindPopup(`<b>Awal</b><br>${start}`).openPopup();
+    endMarker = L.marker(endCoord).addTo(map).bindPopup(`<b>Tujuan</b><br>${end}`);
 
   } catch (err) {
-    console.error(err);
-    alert('Terjadi kesalahan saat memproses rute.');
+    console.error('Terjadi kesalahan:', err);
+    alert('Terjadi kesalahan saat memproses rute. Periksa koneksi internet Anda.');
   }
 }
