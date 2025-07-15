@@ -7,6 +7,16 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
 let routeLayer = null;
 let startMarker = null;
 let endMarker = null;
+let trukMarker = null;
+let animasiInterval = null;
+
+// Ikon truk
+const trukIcon = L.icon({
+  iconUrl: 'Icon Truck.png', // Pastikan file ini ada
+  iconSize: [40, 40],
+  iconAnchor: [20, 40],
+  popupAnchor: [0, -40]
+});
 
 async function cariRute() {
   const start = document.getElementById('start').value.trim();
@@ -42,6 +52,7 @@ async function cariRute() {
     }
 
     const route = routeData.routes[0];
+    const coords = route.geometry.coordinates.map(c => [c[1], c[0]]); // [lat, lon]
     const distanceKm = (route.distance / 1000).toFixed(2);
     const durationJam = (route.duration / 3600).toFixed(2);
     const biayaTotal = (beratBarang * biayaPerKg).toLocaleString('id-ID');
@@ -54,18 +65,34 @@ async function cariRute() {
       <p>💸 <strong>Biaya Pengiriman:</strong> Rp ${biayaTotal}</p>
     `;
 
-    // Hapus rute dan marker sebelumnya
+    // Bersihkan layer dan marker sebelumnya
     if (routeLayer) map.removeLayer(routeLayer);
     if (startMarker) map.removeLayer(startMarker);
     if (endMarker) map.removeLayer(endMarker);
+    if (trukMarker) map.removeLayer(trukMarker);
+    if (animasiInterval) clearInterval(animasiInterval);
 
-    // Tambahkan rute baru
+    // Gambar rute
     routeLayer = L.geoJSON(route.geometry).addTo(map);
     map.fitBounds(routeLayer.getBounds());
 
-    // Tambahkan marker baru
-    startMarker = L.marker(startCoord).addTo(map).bindPopup(`<b>Awal</b><br>${start}`).openPopup();
+    // Tambahkan marker tetap
+    startMarker = L.marker(startCoord).addTo(map).bindPopup(`<b>Awal</b><br>${start}`);
     endMarker = L.marker(endCoord).addTo(map).bindPopup(`<b>Tujuan</b><br>${end}`);
+
+    // Tambahkan marker truk dengan animasi
+    let index = 0;
+    trukMarker = L.marker(coords[0], { icon: trukIcon }).addTo(map).bindPopup("🚛 Truk Berangkat").openPopup();
+
+    animasiInterval = setInterval(() => {
+      index++;
+      if (index >= coords.length) {
+        clearInterval(animasiInterval);
+        trukMarker.bindPopup("📍 Truk Tiba di Tujuan").openPopup();
+        return;
+      }
+      trukMarker.setLatLng(coords[index]);
+    }, 80); // kecepatan animasi (semakin kecil = semakin cepat)
 
   } catch (err) {
     console.error('Terjadi kesalahan:', err);
